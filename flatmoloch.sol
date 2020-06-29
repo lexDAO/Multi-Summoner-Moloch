@@ -421,16 +421,11 @@ contract Moloch is ReentrancyGuard {
         uint256 _summoningRate,
         uint256 _summoningTermination
     ) public {
-        require(_periodDuration > 0, "_periodDuration cannot be 0");
-        require(_votingPeriodLength > 0, "_votingPeriodLength cannot be 0");
         require(_votingPeriodLength <= MAX_VOTING_PERIOD_LENGTH, "_votingPeriodLength exceeds limit");
         require(_gracePeriodLength <= MAX_GRACE_PERIOD_LENGTH, "_gracePeriodLength exceeds limit");
-        require(_dilutionBound > 0, "_dilutionBound cannot be 0");
         require(_dilutionBound <= MAX_DILUTION_BOUND, "_dilutionBound exceeds limit");
         require(_approvedTokens.length > 0, "need at least one approved token");
-        require(_approvedTokens.length <= MAX_TOKEN_WHITELIST_COUNT, "too many tokens");
-        require(_proposalDeposit >= _processingReward, "_proposalDeposit cannot be smaller than _processingReward");
-        
+
         depositToken = _approvedTokens[0];
         // NOTE: move event up here, avoid stack too deep if too many approved tokens
         emit SummonComplete(_summoners, _approvedTokens, now, _periodDuration, _votingPeriodLength, _gracePeriodLength, _proposalDeposit, _dilutionBound, _processingReward, _summoningRate, summoningTermination);
@@ -441,7 +436,6 @@ contract Moloch is ReentrancyGuard {
         }
 
         for (uint256 i = 0; i < _approvedTokens.length; i++) {
-            require(!tokenWhitelist[_approvedTokens[i]], "duplicate approved token");
             tokenWhitelist[_approvedTokens[i]] = true;
             approvedTokens.push(_approvedTokens[i]);
         }
@@ -464,8 +458,9 @@ contract Moloch is ReentrancyGuard {
 
     function makeSummoningTribute(uint256 tribute) public onlyMember {
         require(now < summoningTermination, "summoning terminated");
-        require(IERC20(depositToken).transferFrom(msg.sender, address(this), tribute), "tribute transfer failed");
         require(members[msg.sender].shares <= 1);
+        
+        IERC20(depositToken).transferFrom(msg.sender, address(this), tribute);
         
         unsafeAddToBalance(GUILD, depositToken, tribute);
         
