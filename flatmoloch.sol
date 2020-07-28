@@ -836,7 +836,7 @@ contract MolochSummoner {
     Moloch private baal;
     ISummonMinion public minionSummoner;
     
-    event SummonMoloch(address indexed moloch, address[] indexed summoners, address indexed depositToken, uint256 summoningTime, uint256 periodDuration, uint256 votingPeriodLength, uint256 gracePeriodLength, uint256 proposalDeposit, uint256 dilutionBound, uint256 processingReward, uint256[] summonerStake, uint256 summoningDeposit, uint256 summoningRate, uint256 summoningTermination);
+    event SummonMoloch(address indexed moloch, address[] summoners, address indexed depositToken, uint256 summoningTime, uint256 periodDuration, uint256 votingPeriodLength, uint256 gracePeriodLength, uint256 proposalDeposit, uint256 dilutionBound, uint256 processingReward, uint256[] summonerStake, uint256 summoningDeposit, uint256 summoningRate, uint256 summoningTermination);
     
     constructor(address _minionSummoner) public { 
         minionSummoner = ISummonMinion(_minionSummoner);
@@ -873,10 +873,12 @@ contract MolochSummoner {
         
         address moloch = address(baal);
         
+        
         require(IERC20(_depositToken).transferFrom(msg.sender, moloch, _summoningDeposit), "transfer failed"); // transfer summoning deposit to new moloch
         
         minionSummoner.summonMinion(moloch, _depositToken); // summon minion for new moloch
         
-        emit SummonMoloch(moloch, _summoners, _depositToken, now, _periodDuration, _votingPeriodLength, _gracePeriodLength, _proposalDeposit, _dilutionBound, _processingReward, _summonerShares, _summoningDeposit, _summoningRate, _summoningTermination);
+    emit SummonMoloch(moloch, _summoners, _depositToken, now, _periodDuration, _votingPeriodLength, _gracePeriodLength, _proposalDeposit, _dilutionBound, _processingReward, _summonerShares, _summoningDeposit, _summoningRate, _summoningTermination);
+    
     }
 }
