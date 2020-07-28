@@ -5,24 +5,26 @@ import "./Minion.sol";
 contract MinionSummoner {
     Minion private minion;
     address public molochSummoner;
-    address[] public minions;
-    address[] public molochs;
-    bool private molochSummonerSet = false; // chains MinionSummoner to MolochSummoner after contracts set
-
-    event Summoned(address indexed minion, address moloch);
+    uint8 private status;
+    uint8 private NOT_SET;
+    uint8 private constant SET = 1;
     
-    function setMolochSummoner(address _molochSummoner) public {
-        require(molochSummonerSet == false, "molochSummoner already set");
-        molochSummoner = _molochSummoner;
-        molochSummonerSet = true;
+    event SummonMinion(address indexed minion);
+
+    constructor() public {
+        status = NOT_SET;
     }
 
-    function summonMinion(address _moloch, address _molochApprovedToken) public {
-        require(msg.sender == molochSummoner, "caller not molochSummoner");
-        minion = new Minion(_moloch, _molochApprovedToken);
+    function setMolochSummoner(address _molochSummoner) external {
+        require(status != SET, "already set");
+        molochSummoner = _molochSummoner;
+        status = SET; // lock minionSummoner to molochSummoner
+    }
+
+    function summonMinion(address _moloch, address _molochDepositToken) external {
+        require(msg.sender == molochSummoner, "not molochSummoner");
+        minion = new Minion(_moloch, _molochDepositToken); // summon minion for parent moloch
         
-        minions.push(address(minion));
-        molochs.push(address(_moloch));
-        emit Summoned(address(minion), _moloch);
+        emit SummonMinion(address(minion));
     }
 }
